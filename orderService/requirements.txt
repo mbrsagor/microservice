@@ -15,7 +15,7 @@ prompt_toolkit==3.0.51
 psycopg2-binary==2.9.10
 python-dateutil==2.9.0.post0
 six==1.17.0
-sqlparse==0.5.3
+sqlparse==0.5.4
 tzdata==2025.2
 vine==5.1.0
 wcwidth==0.2.13
