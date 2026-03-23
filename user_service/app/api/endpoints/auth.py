@@ -25,9 +25,11 @@ def login_access_token(user_in: UserLogin, db: Session = Depends(get_db)):
         return JSONResponse(status_code=400, content=error_resp)
     
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    # Custom response
     resp = custom_response.prepare_login_response(
         token=create_access_token(user.id, expires_delta=access_token_expires),
         role=user.role,
+        role_id=user.role,
         email=user.email,
         full_name=f"{user.first_name} {user.last_name}",
     )
