@@ -1,0 +1,60 @@
+services:
+  # User Service
+  user-api:
+    build: 
+      context: ./user_service
+    container_name: user_service_app
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/user_db
+      - SECRET_KEY=your-super-secret-jwt-key
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./user_service:/app
+    restart: unless-stopped
+
+  # Doctor Service
+  doctor-api:
+    build: 
+      context: ./doctor_service
+    container_name: doctor_service_app
+    ports:
+      - "8002:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/doctor_db
+      # Address of the user service for inter-service communication
+      - USER_SERVICE_URL=http://user-api:8000
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./doctor_service:/app
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      # postgres db is created by default, scripts will create user_db and doctor_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
