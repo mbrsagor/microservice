@@ -17,3 +17,6 @@ class User(Base):
     last_name = Column(String, nullable=True)
     role = Column(Enum(Role), default=Role.PATIENT, nullable=False)
     is_active = Column(Boolean, default=True)
+
+    def __str__(self):
+        return self.email
