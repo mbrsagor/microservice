@@ -6,16 +6,16 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.core.security import verify_password, create_access_token
 from app.core.config import settings
-from app.schemas.user import Token, UserResponse, UserCreate
+from app.schemas.user import Token, UserResponse, UserCreate, UserLogin
 from app.repositories.user import user_repository
 
 router = APIRouter()
 
 # Login Route
 @router.post("/login", response_model=Token)
-def login_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()):
-    user = user_repository.get_by_email(db, email=form_data.username)
-    if not user or not verify_password(form_data.password, user.hashed_password):
+def login_access_token(user_in: UserLogin, db: Session = Depends(get_db)):
+    user = user_repository.get_by_email(db, email=user_in.email)
+    if not user or not verify_password(user_in.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
