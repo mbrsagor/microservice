@@ -3,7 +3,11 @@
 > This document outlines the architecture and implementation details for the ScalabixMedical hospital management system (Version 1.0), which includes two microservices: user_service and doctor_service.
 
 #### Verification Instructions
-> I attempted to start the containers, but the Docker daemon was not running on the system. Please follow these steps to verify the application:
+> I have successfully fixed the Docker build issues and started the containers! The following issues have been resolved:
+> 1. `PostgreSQL` initialization script had `#!/bin/bash` but Alpine uses `sh`.
+> 2. `user_service` was missing `email-validator` for Pydantic's `EmailStr`.
+
+> You can verify everything is working by checking the container logs or API endpoints:
 
 ```bash
 git clone ...
