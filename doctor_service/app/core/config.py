@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 
+# settings class
 class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/doctor_db"
     USER_SERVICE_URL: str = "http://localhost:8001"

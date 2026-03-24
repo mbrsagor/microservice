@@ -47,6 +47,16 @@ async def create_doctor(
     return custom_response.prepare_success_response(data=doctor_data)
 
 
+@router.get("/")
+async def read_doctors(
+    db: Session = Depends(get_db),
+    token: str = Depends(get_token)
+):
+    doctors = doctor_repository.get_all(db)
+    doctors_data = [DoctorResponse.model_validate(doctor).model_dump() for doctor in doctors]
+    return custom_response.prepare_success_response(data=doctors_data)
+
+
 @router.get("/doctor/{doctor_id}")
 async def read_doctor(
     doctor_id: int, 
