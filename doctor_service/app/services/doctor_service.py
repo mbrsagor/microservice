@@ -16,12 +16,14 @@ class UserServiceIntegration:
                 # We call the user service to get the user based on the token context
                 # The token passed here must have adequate permissions to fetch the user_id
                 response = await client.get(
-                    f"{settings.USER_SERVICE_URL}/api/v1/users/{user_id}",
+                    f"{settings.USER_SERVICE_URL}/api/v1/users/user/{user_id}",
                     headers={"Authorization": f"Bearer {token}"}
                 )
                 
                 if response.status_code == 200:
-                    return response.json()
+                    json_resp = response.json()
+                    # Extract the payload from the newly added custom response wrapper
+                    return json_resp.get("data", json_resp)
                 elif response.status_code == 404:
                     raise HTTPException(status_code=404, detail="User not found in User Service")
                 elif response.status_code == 403:

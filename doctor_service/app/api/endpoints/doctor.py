@@ -35,7 +35,7 @@ async def create_doctor(
     doctor = doctor_repository.create(db, obj_in=doctor_in)
     return doctor
 
-@router.get("/{doctor_id}", response_model=DoctorWithUserInfo)
+@router.get("/doctor/{doctor_id}", response_model=DoctorWithUserInfo)
 async def read_doctor(
     doctor_id: int, 
     db: Session = Depends(get_db),
