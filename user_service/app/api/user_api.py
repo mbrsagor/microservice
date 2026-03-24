@@ -8,13 +8,8 @@ from app.repositories.user_repository import user_repository
 
 router = APIRouter()
 
-# Get current user
-@router.get("/me", response_model=UserResponse)
-def read_user_me(current_user: User = Depends(get_current_active_user)):
-    return current_user
-
 # Get user by id
-@router.get("/{user_id}", response_model=UserResponse)
+@router.get("/user/{user_id}", response_model=UserResponse)
 def read_user_by_id(
     user_id: int,
     current_user: User = Depends(get_current_active_user),

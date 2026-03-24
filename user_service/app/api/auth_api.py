@@ -9,6 +9,8 @@ from app.core.config import settings
 from app.repositories.user_repository import user_repository
 from app.core.security import verify_password, create_access_token
 from app.schemas.user_schema import Token, UserResponse, UserCreate, UserLogin
+from app.models.model import User
+from app.services.user_service import get_current_active_user
 
 router = APIRouter()
 
@@ -54,3 +56,9 @@ def register_user(user_in: UserCreate, db: Session = Depends(get_db)):
     user = user_repository.create(db, obj_in=user_in)
     user_data = UserResponse.model_validate(user).model_dump()
     return custom_response.prepare_register_response(user_data)
+
+# Get current user
+@router.get("/profile")
+def read_user_profile(current_user: User = Depends(get_current_active_user)):
+    user_data = UserResponse.model_validate(current_user).model_dump()
+    return custom_response.prepare_success_response(data=user_data)
