@@ -1,6 +1,8 @@
 import httpx
 from fastapi import HTTPException
+
 from app.core.config import settings
+from app.utils import custom_response
 
 class UserServiceIntegration:
     """Handles communication with the User Service."""

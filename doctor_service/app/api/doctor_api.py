@@ -1,12 +1,13 @@
 from fastapi.responses import JSONResponse
-from fastapi import APIRouter, Depends, status, Header
+from fastapi import APIRouter, Depends, status, Header, HTTPException
 from sqlalchemy.orm import Session
+
 from app.db.database import get_db
-from app.schemas.doctor_schema import DoctorResponse, DoctorCreate, DoctorWithUserInfo
 from app.models.model import Doctor
+from app.utils import custom_response
 from app.repositories.doctor_repository import doctor_repository
 from app.services.doctor_service import UserServiceIntegration
-from app.utils import custom_response
+from app.schemas.doctor_schema import DoctorResponse, DoctorCreate, DoctorWithUserInfo
 
 router = APIRouter()
 
@@ -24,7 +25,11 @@ async def create_doctor(
 ):
     # Verify user exists and is authorized to be a doctor (e.g. via User Service)
     # The get_user_info call acts as our service-to-service validation
-    user_info = await UserServiceIntegration.get_user_info(doctor_in.user_id, token)
+    try:
+        user_info = await UserServiceIntegration.get_user_info(doctor_in.user_id, token)
+    except HTTPException as exc:
+        error_resp = custom_response.prepare_error_response(exc.detail)
+        return JSONResponse(status_code=exc.status_code, content=error_resp)
     
     # We can also verify the user's role is 'doctor' here based on what we get back
     if user_info.get("role") != "doctor":
@@ -54,7 +59,11 @@ async def read_doctor(
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content=error_resp)
     
     # Fetch additional user info to enrich the response
-    user_info = await UserServiceIntegration.get_user_info(doctor.user_id, token)
+    try:
+        user_info = await UserServiceIntegration.get_user_info(doctor.user_id, token)
+    except HTTPException as exc:
+        error_resp = custom_response.prepare_error_response(exc.detail)
+        return JSONResponse(status_code=exc.status_code, content=error_resp)
     
     # Build complete response
     response_data = doctor.__dict__.copy()
