@@ -19,3 +19,9 @@ class DoctorResponse(DoctorBase):
 # Used to structure the combined response for a doctor + user info
 class DoctorWithUserInfo(DoctorResponse):
     user_info: dict
+
+# Doctor update schema
+class DoctorUpdate(BaseModel):
+    specialization: Optional[str] = None
+    experience_years: Optional[int] = None
+    is_available: Optional[bool] = None

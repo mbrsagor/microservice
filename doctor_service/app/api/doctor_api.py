@@ -7,16 +7,19 @@ from app.models.model import Doctor
 from app.utils import custom_response, messages
 from app.repositories.doctor_repository import doctor_repository
 from app.services.doctor_service import UserServiceIntegration
-from app.schemas.doctor_schema import DoctorResponse, DoctorCreate, DoctorWithUserInfo
+from app.schemas.doctor_schema import DoctorResponse, DoctorCreate, DoctorWithUserInfo, DoctorUpdate
 
 router = APIRouter()
 
+# This token is used to verify the user exists and is authorized to be a doctor
+# It is passed to the user service to verify the user
 def get_token(authorization: str = Header(...)):
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail=messages.INVALID_AUTH_HEADER)
     return authorization.split(" ")[1]
 
 
+# create doctor endpoint
 @router.post("/")
 async def create_doctor(
     doctor_in: DoctorCreate, 
@@ -47,6 +50,7 @@ async def create_doctor(
     return custom_response.prepare_success_response(data=doctor_data)
 
 
+# get all doctors endpoint
 @router.get("/")
 async def read_doctors(
     db: Session = Depends(get_db),
@@ -57,6 +61,7 @@ async def read_doctors(
     return custom_response.prepare_success_response(data=doctors_data)
 
 
+# get doctor by id endpoint
 @router.get("/doctor/{doctor_id}")
 async def read_doctor(
     doctor_id: int, 
@@ -81,3 +86,30 @@ async def read_doctor(
     response_data["user_info"] = user_info
     
     return custom_response.prepare_success_response(data=response_data)
+
+
+# Update doctor endpoint
+@router.put("/doctor/{doctor_id}")
+async def update_doctor(
+    doctor_id: int, 
+    doctor_in: DoctorUpdate, 
+    db: Session = Depends(get_db),
+    token: str = Depends(get_token)
+):
+    # Verify user exists and is authorized to be a doctor (e.g. via User Service)
+    try:
+        user_info = await UserServiceIntegration.get_user_info(doctor_in.user_id, token)
+    except HTTPException as exc:
+        error_resp = custom_response.prepare_error_response(exc.detail)
+        return JSONResponse(status_code=exc.status_code, content=error_resp)
+    
+    # Check if doctor exists
+    existing_doc = doctor_repository.get(db, doctor_id=doctor_id)
+    if not existing_doc:
+        error_resp = custom_response.prepare_error_response(messages.DOCTOR_NOT_FOUND)
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content=error_resp)
+    
+    # Update doctor
+    doctor = doctor_repository.update(db, db_obj=existing_doc, obj_in=doctor_in)
+    doctor_data = DoctorResponse.model_validate(doctor).model_dump()
+    return custom_response.prepare_success_response(data=doctor_data)

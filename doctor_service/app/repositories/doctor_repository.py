@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.model import Doctor
-from app.schemas.doctor_schema import DoctorCreate
+from app.schemas.doctor_schema import DoctorCreate, DoctorUpdate
 
 
 class DoctorRepository:
@@ -27,6 +27,15 @@ class DoctorRepository:
         )
 
         db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+    
+    # update doctor
+    def update(self, db: Session, db_obj: Doctor, obj_in: DoctorUpdate):
+        db_obj.specialization = obj_in.specialization
+        db_obj.experience_years = obj_in.experience_years
+        db_obj.is_available = obj_in.is_available
         db.commit()
         db.refresh(db_obj)
         return db_obj
