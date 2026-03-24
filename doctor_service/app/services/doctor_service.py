@@ -2,7 +2,7 @@ import httpx
 from fastapi import HTTPException
 
 from app.core.config import settings
-from app.utils import custom_response
+from app.utils import custom_response, messages
 
 class UserServiceIntegration:
     """Handles communication with the User Service."""
@@ -27,11 +27,11 @@ class UserServiceIntegration:
                     # Extract the payload from the newly added custom response wrapper
                     return json_resp.get("data", json_resp)
                 elif response.status_code == 404:
-                    raise HTTPException(status_code=404, detail="User not found in User Service")
+                    raise HTTPException(status_code=404, detail=messages.USER_NOT_FOUND)
                 elif response.status_code == 403:
-                    raise HTTPException(status_code=403, detail="Not authorized to fetch this user info")
+                    raise HTTPException(status_code=403, detail=messages.UNAUTHORIZED_USER_FETCH)
                 else:
-                    raise HTTPException(status_code=response.status_code, detail="Error communicating with User Service")
+                    raise HTTPException(status_code=response.status_code, detail=messages.USER_SERVICE_ERROR)
                     
             except httpx.RequestError as exc:
-                raise HTTPException(status_code=503, detail=f"User Service is unavailable: {exc}")
+                raise HTTPException(status_code=503, detail=messages.USER_SERVICE_UNAVAILABLE.format(exc=exc))

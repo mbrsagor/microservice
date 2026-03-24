@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.model import Doctor
-from app.utils import custom_response
+from app.utils import custom_response, messages
 from app.repositories.doctor_repository import doctor_repository
 from app.services.doctor_service import UserServiceIntegration
 from app.schemas.doctor_schema import DoctorResponse, DoctorCreate, DoctorWithUserInfo
@@ -13,7 +13,7 @@ router = APIRouter()
 
 def get_token(authorization: str = Header(...)):
     if not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Invalid authorization header format")
+        raise HTTPException(status_code=401, detail=messages.INVALID_AUTH_HEADER)
     return authorization.split(" ")[1]
 
 
@@ -33,13 +33,13 @@ async def create_doctor(
     
     # We can also verify the user's role is 'doctor' here based on what we get back
     if user_info.get("role") != "doctor":
-        error_resp = custom_response.prepare_error_response("User role is not assigned as doctor")
+        error_resp = custom_response.prepare_error_response(messages.NOT_DOCTOR_ROLE)
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=error_resp)
 
     # Check if doctor already exists
     existing_doc = doctor_repository.get_by_user_id(db, user_id=doctor_in.user_id)
     if existing_doc:
-         error_resp = custom_response.prepare_error_response("Doctor profile already exists for this user")
+         error_resp = custom_response.prepare_error_response(messages.DOCTOR_ALREADY_EXISTS)
          return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=error_resp)
 
     doctor = doctor_repository.create(db, obj_in=doctor_in)
@@ -55,7 +55,7 @@ async def read_doctor(
 ):
     doctor = doctor_repository.get(db, doctor_id=doctor_id)
     if not doctor:
-        error_resp = custom_response.prepare_error_response("Doctor not found")
+        error_resp = custom_response.prepare_error_response(messages.DOCTOR_NOT_FOUND)
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content=error_resp)
     
     # Fetch additional user info to enrich the response
