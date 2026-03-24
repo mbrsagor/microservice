@@ -40,4 +40,10 @@ class DoctorRepository:
         db.refresh(db_obj)
         return db_obj
 
+    # delete doctor
+    def delete(self, db: Session, db_obj: Doctor):
+        db.delete(db_obj)
+        db.commit()
+        return db_obj
+
 doctor_repository = DoctorRepository()

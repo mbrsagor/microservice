@@ -96,20 +96,46 @@ async def update_doctor(
     db: Session = Depends(get_db),
     token: str = Depends(get_token)
 ):
+    # Check if doctor exists
+    existing_doc = doctor_repository.get(db, doctor_id=doctor_id)
+    if not existing_doc:
+        error_resp = custom_response.prepare_error_response(messages.DOCTOR_NOT_FOUND)
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content=error_resp)
+
     # Verify user exists and is authorized to be a doctor (e.g. via User Service)
     try:
-        user_info = await UserServiceIntegration.get_user_info(doctor_in.user_id, token)
+        user_info = await UserServiceIntegration.get_user_info(existing_doc.user_id, token)
     except HTTPException as exc:
         error_resp = custom_response.prepare_error_response(exc.detail)
         return JSONResponse(status_code=exc.status_code, content=error_resp)
     
+    # Update doctor
+    doctor = doctor_repository.update(db, db_obj=existing_doc, obj_in=doctor_in)
+    doctor_data = DoctorResponse.model_validate(doctor).model_dump()
+    return custom_response.prepare_success_response(data=doctor_data)
+
+
+# Delete doctor endpoint
+@router.delete("/doctor/{doctor_id}")
+async def delete_doctor(
+    doctor_id: int, 
+    db: Session = Depends(get_db),
+    token: str = Depends(get_token)
+):
     # Check if doctor exists
     existing_doc = doctor_repository.get(db, doctor_id=doctor_id)
     if not existing_doc:
         error_resp = custom_response.prepare_error_response(messages.DOCTOR_NOT_FOUND)
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content=error_resp)
     
-    # Update doctor
-    doctor = doctor_repository.update(db, db_obj=existing_doc, obj_in=doctor_in)
+    # Verify user exists and is authorized to be a doctor (e.g. via User Service)
+    try:
+        user_info = await UserServiceIntegration.get_user_info(existing_doc.user_id, token)
+    except HTTPException as exc:
+        error_resp = custom_response.prepare_error_response(exc.detail)
+        return JSONResponse(status_code=exc.status_code, content=error_resp)
+    
+    # Delete doctor
+    doctor = doctor_repository.delete(db, db_obj=existing_doc)
     doctor_data = DoctorResponse.model_validate(doctor).model_dump()
     return custom_response.prepare_success_response(data=doctor_data)
