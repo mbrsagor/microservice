@@ -1,6 +1,6 @@
-# ScalabixMedical Deployment 🚀
+# Scalabix Medical Deployment 🚀
 
-> Welcome! In this guide, I’ll demonstrate how to deploy the ScalabixMedical microservices backend API (FastAPI) using GitHub Actions with a complete CI/CD workflow. CI/CD (Continuous Integration and Continuous Deployment) helps automate the development process, making it faster, more reliable, and easier to maintain.
+> Welcome! In this guide, I’ll demonstrate how to deploy the Scalabix Medical microservices backend API (FastAPI) using GitHub Actions with a complete CI/CD workflow. CI/CD (Continuous Integration and Continuous Deployment) helps automate the development process, making it faster, more reliable, and easier to maintain.
 
 ### Setup:
 
@@ -12,7 +12,7 @@
     - Finally, you can see and copy the Access Key ID and Secret Access Key.
 
 - Create EC2 machine
-- Create ECR (Elastic Container Registry) repositories for your microservices (e.g., `user-api` and `doctor-api`)
+- Create ECR (Elastic Container Registry) repositories for your microservices (e.g., `user-api`, `doctor-api`, and `appointment-api`)
 
 ###### Install Docker on EC2 machine:
 
@@ -52,20 +52,6 @@ cd actions-runner/
  ./run.sh
 ```
 
-> Manually create the database node (if deploying the Postgres DB independently from docker-compose):
-
-```bash
-docker run -d \
-  --name postgres_db \
-  --network host \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -v pg_data:/var/lib/postgresql/data \
-  -p 5432:5432 \
-  postgres:15-alpine
-```
-*(Note: Use your `init-multiple-dbs.sh` script to recreate the `user_db` and `doctor_db` logical databases within this container)*
-
 ###### Local docker server run like this:
 
 ```bash
@@ -82,6 +68,10 @@ docker exec -it user_service_app /bin/sh
 or for the Doctor Service:
 ```bash
 docker exec -it doctor_service_app /bin/sh
+```
+or for the Appointment Service:
+```bash
+docker exec -it appointment_service_app /bin/sh
 ```
 
 > Only show clean formatted container status:
